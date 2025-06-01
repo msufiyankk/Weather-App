@@ -7,7 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'weather_update/style.css' %}">
     <script src="{% static 'weather_update/script.js' %}" defer></script>
+    <link rel="icon" type="image/png" href="{% static 'favicon/logo.png' %}">
     <title>Weather App</title>
+    <p id="wind-speed"></p>
 </head>
 <body>
     <div class="container">
@@ -36,7 +38,10 @@
                 📍 <span id="cityName">New York City</span>
             </div>
             
-            <div class="weather-icon" id="weatherIcon">☀️</div>
+            <div class="weather-icon" id="weatherIcon"></div>
+            {% comment %} <div class="weather-icon">
+                <img id="weatherIcon" alt="Weather Icon" />
+            </div> {% endcomment %}
             
             <div class="temperature" id="temperature">22°C</div>
             
