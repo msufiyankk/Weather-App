@@ -3,17 +3,16 @@ from django.http import JsonResponse
 import requests
 
 
-API_KEY = "0e854c819f48ceb01a980aaad0425e0e"
-
 def home_page(request):
     return render(request, 'home.html')
 
 def get_weather(request):
     city = request.GET.get("city")
     if not city:
-        return JsonResponse({"error": "City name required"}, status=400)
+        return JsonResponse({"error": "City is required"}, status=400)
 
-    url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+    api_key = "0e854c819f48ceb01a980aaad0425e0e"
+    url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -26,6 +25,6 @@ def get_weather(request):
         "condition": data["weather"][0]["description"],
         "humidity": data["main"]["humidity"],
         "windSpeed": data["wind"]["speed"],
-        "icon": data["weather"][0]["icon"]
+        "icon": data['weather'][0]['main']
     })
 
