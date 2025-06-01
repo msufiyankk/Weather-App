@@ -1,0 +1,59 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'weather_update/style.css' %}">
+    <script src="{% static 'weather_update/script.js' %}" defer></script>
+    <title>Weather App</title>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Weather App</h1>
+            <p>Get current weather information for any city</p>
+        </header>
+
+        <section class="search-section">
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="cityInput" 
+                    placeholder="Enter city name..."
+                    autocomplete="off"
+                >
+                <button class="search-btn" id="searchBtn">Search</button>
+            </div>
+            <div class="loading" id="loading">🔄 Fetching weather data...</div>
+            <div class="error" id="error"></div>
+        </section>
+
+        <main class="weather-display" id="weatherDisplay">
+            <div class="location" id="location">
+                📍 <span id="cityName">New York City</span>
+            </div>
+            
+            <div class="weather-icon" id="weatherIcon">☀️</div>
+            
+            <div class="temperature" id="temperature">22°C</div>
+            
+            <div class="condition" id="condition">Sunny</div>
+            
+            <div class="weather-details">
+                <div class="detail-item">
+                    <div class="detail-label">Humidity</div>
+                    <div class="detail-value" id="humidity">65%</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Wind Speed</div>
+                    <div class="detail-value" id="windSpeed">12 km/h</div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
