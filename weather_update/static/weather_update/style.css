@@ -191,6 +191,39 @@ body {
     display: block;
 }
 
+/* suggestion  box */
+#suggestionBox {
+    /* position: absolute; */
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.493);
+    border: 0px solid #e9ecef;
+    border-top: none;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    /* display: none;  */
+    max-height: 200px;
+    overflow-y: auto;
+    cursor: pointer;
+    list-style: none;
+}
+
+.suggestion-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #2d3436;
+    transition: background 0.3s ease;
+}
+
+.suggestion-item:hover {
+    background: #f1f2f6;
+}
+
+
+
 /* Mobile responsiveness */
 @media (max-width: 480px) {
     .container {
