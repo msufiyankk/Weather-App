@@ -141,3 +141,51 @@ function hideWeatherDisplay() {
     weatherDisplay.classList.remove('show');
 }
 
+const suggestionBox = document.getElementById('suggestionBox');
+
+// Auto-suggestions using OpenWeatherMap Geo API
+cityInput.addEventListener('input', () => {
+    const input = cityInput.value.trim();
+    const query = cityInput.value.trim();
+    if (!query) {
+        suggestionBox.style.display = 'none';
+        return;
+    }
+
+    if (!input) {
+        suggestionBox.innerHTML = '';
+        return;
+    }
+
+    fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(input)}&limit=5&appid=0e854c819f48ceb01a980aaad0425e0e`)
+        .then(response => response.json())
+        .then(data => {
+            suggestionBox.innerHTML = '';
+
+            data.forEach(location => {
+                const fullCity = `${location.name}, ${location.country}`;
+                const li = document.createElement('li');
+                li.textContent = fullCity;
+
+                // On click, set input and search
+                li.addEventListener('click', () => {
+                    cityInput.value = location.name;  // or fullCity if you handle it
+                    suggestionBox.innerHTML = '';
+                    handleSearch(); // Call your weather fetcher
+                });
+
+                suggestionBox.appendChild(li);
+            });
+        });
+});
+
+
+document.getElementById('searchBtn').addEventListener('click', () => {
+    const city = cityInput.value.trim();
+    if (city) {
+        suggestionBox.style.display = 'none'; // ⬅ Hide suggestions
+        fetchWeather(city); // ⬅ Your existing weather-fetching function
+    }
+});
+
+
