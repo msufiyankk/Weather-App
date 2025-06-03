@@ -14,6 +14,8 @@ const temperature = document.getElementById('temperature');
 const condition = document.getElementById('condition');
 const humidity = document.getElementById('humidity');
 const windSpeed = document.getElementById('windSpeed');
+const suggestionBox = document.getElementById('suggestionBox');
+
 
 // Event listeners
 searchBtn.addEventListener('click', handleSearch);
@@ -111,7 +113,7 @@ function updateBackgroundColor(condition) {
     } else if (normalizedCondition.includes('snow')) {
         body.classList.add('snowy');
     } else {
-        body.classList.add('cloudy'); // default fallback
+        body.classList.add('clear'); // default fallback
     }
 }
 
@@ -141,16 +143,10 @@ function hideWeatherDisplay() {
     weatherDisplay.classList.remove('show');
 }
 
-const suggestionBox = document.getElementById('suggestionBox');
-
 // Auto-suggestions using OpenWeatherMap Geo API
 cityInput.addEventListener('input', () => {
     const input = cityInput.value.trim();
     const query = cityInput.value.trim();
-    if (!query) {
-        suggestionBox.style.display = 'none';
-        return;
-    }
 
     if (!input) {
         suggestionBox.innerHTML = '';
@@ -179,13 +175,230 @@ cityInput.addEventListener('input', () => {
         });
 });
 
+const apiKey = '0e854c819f48ceb01a980aaad0425e0e';
+// Fetch weather
+function fetchWeather(city) {
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
+   
+    addToHistory(city);// ......................................
+   
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) throw new Error("City not found");
+            return response.json();
+        })      
+}
 
-document.getElementById('searchBtn').addEventListener('click', () => {
-    const city = cityInput.value.trim();
-    if (city) {
-        suggestionBox.style.display = 'none'; // ⬅ Hide suggestions
-        fetchWeather(city); // ⬅ Your existing weather-fetching function
+// Autocomplete suggestions
+cityInput.addEventListener('input', () => {
+    const input = cityInput.value.trim();
+
+    if (!input) {
+        suggestionBox.style.display = 'none';
+        suggestionBox.innerHTML = '';
+        return;
+    }
+
+    fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(input)}&limit=5&appid=${apiKey}`)
+        .then(response => response.json())
+        .then(data => {
+            suggestionBox.innerHTML = '';
+
+            if (data.length === 0) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+
+            data.forEach(location => {
+                const fullCity = `${location.name}, ${location.country}`;
+                const li = document.createElement('li');
+                li.textContent = fullCity;
+
+                li.addEventListener('click', () => {
+                    cityInput.value = location.name;
+                    suggestionBox.innerHTML = '';
+                    suggestionBox.style.display = 'none';
+                    fetchWeather(location.name);
+                });
+
+                suggestionBox.appendChild(li);
+            });
+
+            suggestionBox.style.display = 'block';
+        });
+});
+
+// Handle Enter key
+cityInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        const city = cityInput.value.trim();
+        if (city) {
+            suggestionBox.innerHTML = '';
+            suggestionBox.style.display = 'none';
+            fetchWeather(city);
+        }
     }
 });
 
+// Manual search button
+document.getElementById('searchBtn').addEventListener('click', () => {
+    const city = cityInput.value.trim();
+    if (city) {
+        suggestionBox.innerHTML = '';
+        suggestionBox.style.display = 'none';
+        fetchWeather(city);
+    }
+});
+
+// history........
+
+// const searchHistory = document.getElementById('searchHistory');
+// const historyList = []; // holds previously searched cities
+
+// function fetchWeather(city) {
+//     const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
+
+//     fetch(apiUrl)
+//         .then(response => {
+//             if (!response.ok) throw new Error("City not found");
+//             return response.json();
+//         })
+//         .then(data => {
+//             displayWeather(data);
+//             addToHistory(city); // ✅ Add to search history
+//         })
+//         .catch(error => {
+//             console.error('Weather fetch error:', error);
+//             weatherOutput.innerHTML = `<p style="color: red;">${error.message}</p>`;
+//         });
+// }
+
+// function addToHistory(city) {
+//     if (historyList.includes(city)) return; // avoid duplicates
+
+//     historyList.push(city);
+
+//     const li = document.createElement('li');
+//     li.textContent = city;
+//     li.style.cursor = 'pointer';
+
+//     li.addEventListener('click', () => {
+//         cityInput.value = city;
+//         fetchWeather(city);
+//     });
+
+//     searchHistory.appendChild(li);
+// }
+
+
+const searchHistory = document.getElementById('searchHistory');
+const historyList = [];
+
+function addToHistory(city) {
+    if (historyList.includes(city)) return;
+    historyList.push(city);
+    updateHistoryUI(); 
+}
+
+function updateHistoryUI(filter = '') {
+    searchHistory.innerHTML = '';
+
+    const filtered = historyList.filter(city =>
+        city.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    if (filtered.length === 0) {
+        searchHistory.style.display = 'none';
+        return;
+    }
+
+    filtered.forEach(city => {
+        const li = document.createElement('li');
+        li.style.display = 'flex';
+        li.style.justifyContent = 'space-between';
+        li.style.alignItems = 'center';
+
+        const span = document.createElement('span');
+        span.textContent = city;
+        span.style.cursor = 'pointer';
+
+        span.addEventListener('click', () => {
+            cityInput.value = city;
+            fetchWeather(city);
+            searchHistory.style.display = 'none';
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '❌';
+        removeBtn.style.border = 'none';
+        removeBtn.style.background = 'transparent';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.style.color = 'red';
+
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // prevent triggering city search
+            const index = historyList.indexOf(city);
+            if (index !== -1) {
+                historyList.splice(index, 1);
+                updateHistoryUI(filter); // refresh list
+            }
+        });
+
+        li.appendChild(span);
+        li.appendChild(removeBtn);
+        searchHistory.appendChild(li);
+    });
+
+    searchHistory.style.display = 'block';
+}
+
+cityInput.addEventListener('focus', () => {
+    updateHistoryUI(); // show full history
+});
+
+cityInput.addEventListener('input', () => {
+    const input = cityInput.value.trim();
+    updateHistoryUI(input); // show filtered history
+
+    // (your existing suggestion logic below)
+    if (!input) {
+        suggestionBox.style.display = 'none';
+        return;
+    }
+
+    fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(input)}&limit=5&appid=${apiKey}`)
+        .then(response => response.json())
+        .then(data => {
+            suggestionBox.innerHTML = '';
+
+            if (data.length === 0) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+
+            data.forEach(location => {
+                const fullCity = `${location.name}, ${location.country}`;
+                const li = document.createElement('li');
+                li.textContent = fullCity;
+
+                li.addEventListener('click', () => {
+                    cityInput.value = location.name;
+                    suggestionBox.innerHTML = '';
+                    suggestionBox.style.display = 'none';
+                    fetchWeather(location.name);
+                });
+
+                suggestionBox.appendChild(li);
+            });
+
+            suggestionBox.style.display = 'block';
+        });
+});
+
+document.addEventListener('click', (e) => {
+    if (!cityInput.contains(e.target) && !searchHistory.contains(e.target)) {
+        searchHistory.style.display = 'none';
+    }
+});
 
