@@ -28,3 +28,17 @@ def get_weather(request):
         "icon": data['weather'][0]['main']
     })
 
+# @csrf_exempt
+def save_search(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        city = data.get('city', '').strip()
+        if city:
+            SearchHistory.objects.create(city=city)
+            return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)
+
+
+def get_history(request):
+    history = SearchHistory.objects.order_by('-searched_at').values_list('city', flat=True).distinct()[:10]
+    return JsonResponse({'history': list(history)})
