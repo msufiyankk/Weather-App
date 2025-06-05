@@ -186,6 +186,23 @@ function updateHistoryUI(filter = '') {
     searchHistory.style.display = 'block';
 }
 
+function addToHistory(city) {
+    if (!historyList.includes(city)) {
+        historyList.unshift(city);
+        updateHistoryUI();
+
+        fetch('/api/save_search/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include',
+            body: JSON.stringify({ city })
+        }).catch(err => console.error('DB error:', err));
+    }
+}
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie) {

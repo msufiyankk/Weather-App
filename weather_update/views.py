@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 import requests
+from .models import SearchHistory
+from django.views.decorators.csrf import csrf_exempt
 
 
 def home_page(request):
@@ -28,16 +30,20 @@ def get_weather(request):
         "icon": data['weather'][0]['main']
     })
 
-# @csrf_exempt
+@csrf_exempt
 def save_search(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        city = data.get('city', '').strip()
-        if city:
-            SearchHistory.objects.create(city=city)
-            return JsonResponse({'status': 'success'})
-    return JsonResponse({'status': 'error'}, status=400)
-
+        try:
+            data = json.loads(request.body)
+            city = data.get('city', '').strip()
+            if city:
+                SearchHistory.objects.create(city=city)
+                return JsonResponse({'status': 'success'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'City name missing'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
 def get_history(request):
     history = SearchHistory.objects.order_by('-searched_at').values_list('city', flat=True).distinct()[:10]
