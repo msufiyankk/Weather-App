@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 import requests
+import json
 from .models import SearchHistory
 from django.views.decorators.csrf import csrf_exempt
 
@@ -35,15 +36,16 @@ def save_search(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            city = data.get('city', '').strip()
-            if city:
-                SearchHistory.objects.create(city=city)
-                return JsonResponse({'status': 'success'})
-            else:
-                return JsonResponse({'status': 'error', 'message': 'City name missing'}, status=400)
+            city = data.get('city')
+            if not city:
+                return JsonResponse({'error': 'No city provided'}, status=400)
+
+            SearchHistory.objects.create(city=city)  # Save to DB
+
+            return JsonResponse({'message': 'Search saved'})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
 
 def get_history(request):
     history = SearchHistory.objects.order_by('-searched_at').values_list('city', flat=True).distinct()[:10]
