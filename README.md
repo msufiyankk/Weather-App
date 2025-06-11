@@ -50,6 +50,18 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+## Make migrations for the app
+
+```
+python manage.py makemigrations weather_update
+```
+
+## Apply the migrations to the database
+
+```
+python manage.py migrate
+```
+
 ## Run Server
 
 ```
